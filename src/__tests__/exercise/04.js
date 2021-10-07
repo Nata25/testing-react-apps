@@ -4,22 +4,23 @@
 import * as React from 'react'
 import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import faker from 'faker'
+import { build, fake } from '@jackfranklin/test-data-bot'
 import Login from '../../components/login'
 
-function buildLoginForm({ username, password } = {}) {
-  return {
-    username: username ? username : faker.internet.userName(),
-    password: password ? password : faker.internet.password()
+const buildLoginForm = ({ username, password } = {}) => build({
+  fields: {
+    username: username ? username : fake(f => f.internet.userName()),
+    password: password ? password : fake(f => f.internet.password())
   }
-}
+})
 
 test('submitting the form calls onSubmit with username and password', () => {
   const mockedHandleSubmit = jest.fn()
 
   render(<Login onSubmit={mockedHandleSubmit} />)
 
-  const { username, password } = buildLoginForm()
+  const formBuilder = buildLoginForm()
+  const { username, password } = formBuilder()
 
   userEvent.type(screen.getByLabelText(/username/i), username)
   userEvent.type(screen.getByLabelText(/password/i), password)
