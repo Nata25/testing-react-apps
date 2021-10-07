@@ -7,10 +7,10 @@ import userEvent from '@testing-library/user-event'
 import faker from 'faker'
 import Login from '../../components/login'
 
-function buildLoginForm() {
+function buildLoginForm({ username, password } = {}) {
   return {
-    username: faker.internet.userName(),
-    password: faker.internet.password()
+    username: username ? username : faker.internet.userName(),
+    password: password ? password : faker.internet.password()
   }
 }
 
