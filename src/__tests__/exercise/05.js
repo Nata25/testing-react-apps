@@ -5,7 +5,7 @@ import * as React from 'react'
 import {render, screen, waitForElementToBeRemoved } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { build, fake } from '@jackfranklin/test-data-bot'
-import { rest } from 'msw'
+import { handlers } from 'test/server-handlers'
 import { setupServer } from 'msw/node'
 import Login from '../../components/login-submission'
 
@@ -19,16 +19,7 @@ const buildLoginForm = build({
 // you'll want to respond with an JSON object that has the username.
 // 📜 https://mswjs.io/
 
-const server = setupServer(
-  rest.post(
-    'https://auth-provider.example.com/api/login',
-    async (req, res, ctx) => {
-      const { username } = req.body
-      return res(ctx.json({
-        username
-      }))
-    },
-))
+const server = setupServer(...handlers)
 
 // 🐨 before all the tests, start the server with `server.listen()`
 // 🐨 after all the tests, stop the server with `server.close()`
