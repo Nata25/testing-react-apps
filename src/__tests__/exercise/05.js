@@ -6,6 +6,7 @@ import {render, screen, waitForElementToBeRemoved} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {build, fake} from '@jackfranklin/test-data-bot'
 import {handlers} from 'test/server-handlers'
+import {rest} from 'msw'
 import {setupServer} from 'msw/node'
 import Login from '../../components/login-submission'
 
@@ -25,6 +26,7 @@ const server = setupServer(...handlers)
 // 🐨 after all the tests, stop the server with `server.close()`
 
 beforeAll(() => server.listen())
+afterEach(() => server.resetHandlers())
 afterAll(() => server.close())
 
 test(`logging in displays the user's username`, async () => {
@@ -60,5 +62,23 @@ test('displays error message when no password provided', async () => {
   expect(screen.getByRole(/alert/i)).toBeInTheDocument()
   expect(screen.getByRole(/alert/i).textContent).toMatchInlineSnapshot(
     `"password required"`,
+  )
+})
+
+test('responds to server error with a message', async () => {
+  server.use(
+    rest.post(
+      'https://auth-provider.example.com/api/login',
+      async (req, res, ctx) => {
+        return res(ctx.status(500), ctx.json({message: 'server error'}))
+      },
+    ),
+  )
+  render(<Login />)
+  userEvent.click(screen.getByRole('button', {name: /submit/i}))
+  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
+  expect(screen.getByRole(/alert/i)).toBeInTheDocument()
+  expect(screen.getByRole(/alert/i).textContent).toMatchInlineSnapshot(
+    `"server error"`,
   )
 })
