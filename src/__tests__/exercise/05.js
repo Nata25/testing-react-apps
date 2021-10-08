@@ -2,11 +2,11 @@
 // http://localhost:3000/login-submission
 
 import * as React from 'react'
-import {render, screen, waitForElementToBeRemoved } from '@testing-library/react'
+import {render, screen, waitForElementToBeRemoved} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { build, fake } from '@jackfranklin/test-data-bot'
-import { handlers } from 'test/server-handlers'
-import { setupServer } from 'msw/node'
+import {build, fake} from '@jackfranklin/test-data-bot'
+import {handlers} from 'test/server-handlers'
+import {setupServer} from 'msw/node'
 import Login from '../../components/login-submission'
 
 const buildLoginForm = build({
@@ -58,5 +58,7 @@ test('displays error message when no password provided', async () => {
   userEvent.click(screen.getByRole('button', {name: /submit/i}))
   await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
   expect(screen.getByRole(/alert/i)).toBeInTheDocument()
-  expect(screen.getByRole(/alert/i)).toHaveTextContent('password required')
+  expect(screen.getByRole(/alert/i).textContent).toMatchInlineSnapshot(
+    `"password required"`,
+  )
 })
