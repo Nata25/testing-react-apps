@@ -5,59 +5,67 @@ import * as React from 'react'
 import {render, act} from '@testing-library/react'
 import useCounter from '../../components/use-counter'
 
-
-const setup = (args) => {
+const renderHook = (hook) => {
   const result = {}
-  const Counter = () => {
-    // const {count, increment, decrement} = useCounter()
-    Object.assign(result, useCounter(args))
-    return null
+  const setup = () => {
+    const Counter = () => {
+      // const {count, increment, decrement} = useCounter()
+      const hookResult = hook()
+      Object.assign(result, hookResult)
+      return null
+    }
+    render(<Counter />)
   }
-  render(<Counter />)
-  return result
+  return { setup, result }
 }
 
 test('exposes the count and increment/decrement functions', () => {
-  const data = setup()
-  expect(data.count).toEqual(0)
-  act(() => {
-    data.increment()
-  })
-  expect(data.count).toEqual(1)
+  const data = renderHook(() => useCounter())
+  data.setup()
+  expect(data.result.count).toEqual(0)
+  act(() => { data.result.increment() })
+  expect(data.result.count).toEqual(1)
 
-  act(() => {
-    data.decrement()
-  })
-  expect(data.count).toEqual(0)
+  act(() => { data.result.decrement() })
+  expect(data.result.count).toEqual(0)
 })
 
 test('allows customization of the initial count', () => {
-  let data = setup({ initialCount: 2 })
-  expect(data.count).toEqual(2)
-  data = setup({ initialCount: -2 })
-  expect(data.count).toEqual(-2)
-  act(() => { data.increment() })
-  expect(data.count).toEqual(-1)
-  act(() => { data.decrement() })
-  expect(data.count).toEqual(-2)
-  data = setup({ initialCount: 0 })
-  expect(data.count).toEqual(0)
+  // initial count > 0
+  let data = renderHook(() => useCounter({ initialCount: 2 }))
+  data.setup()
+  expect(data.result.count).toEqual(2)
+  // initial count < 0
+  data = renderHook(() => useCounter({ initialCount: -2 }))
+  data.setup()
+  expect(data.result.count).toEqual(-2)
+  act(() => { data.result.increment() })
+  expect(data.result.count).toEqual(-1)
+  act(() => { data.result.decrement() })
+  expect(data.result.count).toEqual(-2)
+  // initial count 0
+  data = renderHook(() => useCounter({ initialCount: 0 }))
+  data.setup()
+  expect(data.result.count).toEqual(0)
 })
 
 test('allows customization of the step', () => {
-  let data = setup({ step: 2 })
-  act(() => { data.increment() })
-  expect(data.count).toEqual(2)
-  act(() => { data.decrement() })
-  expect(data.count).toEqual(0)
+  let data = renderHook(() => useCounter({ step: 2 }))
+  data.setup()
+  act(() => { data.result.increment() })
+  expect(data.result.count).toEqual(2)
+  act(() => { data.result.decrement() })
+  expect(data.result.count).toEqual(0)
 })
 
 test('allows customization of initial count and the step', () => {
-  let data = setup({ initialCount: 3, step: 2 })
-  act(() => { data.increment() })
-  expect(data.count).toEqual(5)
-  act(() => { data.decrement() })
-  expect(data.count).toEqual(3)
+  let data = renderHook(() => useCounter({ initialCount: 3, step: 2 }))
+  data.setup()
+  expect(data.result.count).toEqual(3)
+  act(() => { data.result.increment() })
+  expect(data.result.count).toEqual(5)
+  act(() => { data.result.decrement() })
+  expect(data.result.count).toEqual(3)
 })
 
 /* eslint no-unused-vars:0 */
